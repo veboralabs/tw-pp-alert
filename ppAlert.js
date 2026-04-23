@@ -1,7 +1,7 @@
-if (window.stockAlertLoaded) {
-  console.log("Stock alert är redan laddat");
+if (window.ppAlertLoaded) {
+  console.log("ppAlert redan laddat");
 } else {
-  window.stockAlertLoaded = true;
+  window.ppAlertLoaded = true;
 
   const ids = [
     "premium_exchange_stock_wood",
@@ -11,6 +11,25 @@ if (window.stockAlertLoaded) {
 
   const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
   const previousValues = {};
+  const originalTitle = document.title;
+  let blinkInterval = null;
+
+  function playBeep() {
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+      console.log("Audio error:", err);
+    });
+  }
+
+  function startTitleBlink() {
+    if (blinkInterval) return;
+
+    let toggle = false;
+    blinkInterval = setInterval(() => {
+      document.title = toggle ? "BUY RESOURCES" : originalTitle;
+      toggle = !toggle;
+    }, 1000);
+  }
 
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -25,7 +44,8 @@ if (window.stockAlertLoaded) {
 
     if (newValue > oldValue) {
       console.log(`${id} ökade: ${oldValue} → ${newValue}`);
-      audio.play();
+      playBeep();
+      startTitleBlink();
     }
 
     previousValues[id] = newValue;
