@@ -1,7 +1,7 @@
-if (window.ppAlertLoaded) {
-  console.log("ppAlert redan laddat");
+if (window.stockAlertLoaded) {
+  console.log("Stock alert är redan laddat");
 } else {
-  window.ppAlertLoaded = true;
+  window.stockAlertLoaded = true;
 
   const ids = [
     "premium_exchange_stock_wood",
@@ -9,45 +9,8 @@ if (window.ppAlertLoaded) {
     "premium_exchange_stock_iron"
   ];
 
+  const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
   const previousValues = {};
-  let audioCtx = null;
-
-  function initAudio() {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return null;
-
-    if (!audioCtx) {
-      audioCtx = new AudioContextClass();
-    }
-
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
-
-    return audioCtx;
-  }
-
-  function playBeep() {
-    const ctx = initAudio();
-    if (!ctx) return;
-
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
-    gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
-
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.25);
-  }
-
-  // Försök låsa upp ljud direkt när scriptet körs
-  initAudio();
 
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -62,8 +25,7 @@ if (window.ppAlertLoaded) {
 
     if (newValue > oldValue) {
       console.log(`${id} ökade: ${oldValue} → ${newValue}`);
-      playBeep();
-      document.title = "BUY RESOURCES";
+      audio.play();
     }
 
     previousValues[id] = newValue;
