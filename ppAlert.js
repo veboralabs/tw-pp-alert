@@ -1,44 +1,88 @@
-const ids = [
-  "premium_exchange_stock_wood",
-  "premium_exchange_stock_stone",
-  "premium_exchange_stock_iron"
-];
+if (window.ppAlertLoaded) {
+  console.log("ppAlert redan laddat");
+} else {
+  window.ppAlertLoaded = true;
 
-const audio = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-const previousValues = {};
+  const ids = [
+    "premium_exchange_stock_wood",
+    "premium_exchange_stock_stone",
+    "premium_exchange_stock_iron"
+  ];
 
-ids.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) {
-    previousValues[id] = parseInt(el.textContent.trim(), 10) || 0;
+  const previousValues = {};
+  let audioCtx = null;
+
+  function initAudio() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+
+    if (!audioCtx) {
+      audioCtx = new AudioContextClass();
+    }
+
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
+    return audioCtx;
   }
-});
 
-function checkChange(id, el) {
-  const newValue = parseInt(el.textContent.trim(), 10) || 0;
-  const oldValue = previousValues[id] || 0;
+  function playBeep() {
+    const ctx = initAudio();
+    if (!ctx) return;
 
-  if (newValue > oldValue) {
-    console.log(`${id} ökade: ${oldValue} → ${newValue}`);
-    audio.play();
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, ctx.currentTime);
+    gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.25);
   }
 
-  previousValues[id] = newValue;
+  // Försök låsa upp ljud direkt när scriptet körs
+  initAudio();
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      previousValues[id] = parseInt(el.textContent.trim(), 10) || 0;
+    }
+  });
+
+  function checkChange(id, el) {
+    const newValue = parseInt(el.textContent.trim(), 10) || 0;
+    const oldValue = previousValues[id] || 0;
+
+    if (newValue > oldValue) {
+      console.log(`${id} ökade: ${oldValue} → ${newValue}`);
+      playBeep();
+      document.title = "BUY RESOURCES";
+    }
+
+    previousValues[id] = newValue;
+  }
+
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const observer = new MutationObserver(() => {
+      checkChange(id, el);
+    });
+
+    observer.observe(el, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  });
+
+  console.log("Stock alert aktivt");
 }
-
-ids.forEach(id => {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const observer = new MutationObserver(() => {
-    checkChange(id, el);
-  });
-
-  observer.observe(el, {
-    childList: true,
-    subtree: true,
-    characterData: true
-  });
-});
-
-console.log("Stock alert aktivt");
