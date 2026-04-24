@@ -341,20 +341,37 @@
     content.appendChild(status);
     content.appendChild(buttons);
     const footer = document.createElement("div");
-    footer.style.marginTop = "14px";
-    footer.style.textAlign = "center";
+    footer.style.marginTop = "16px";
+    footer.style.display = "flex";
+    footer.style.justifyContent = "space-between";
+    footer.style.alignItems = "center";
     footer.style.fontSize = "11px";
     footer.style.opacity = "0.8";
     
-    const link = document.createElement("a");
-    link.href = "https://twactics.com";
-    link.target = "_blank";
-    link.textContent = "Twactics";
-    link.style.color = "#2f1b00";
-    link.style.textDecoration = "underline";
+    // LEFT: Send feedback
+    const feedbackLink = document.createElement("a");
+    feedbackLink.href = "https://twactics.com/scripts/timer";
+    feedbackLink.target = "_blank";
+    feedbackLink.textContent = "Send feedback";
+    feedbackLink.style.color = "#2f1b00";
+    feedbackLink.style.textDecoration = "underline";
     
-    footer.appendChild(document.createTextNode("Created by "));
-    footer.appendChild(link);
+    // RIGHT: Created by Twactics
+    const createdBy = document.createElement("div");
+    
+    const twacticsLink = document.createElement("a");
+    twacticsLink.href = "https://twactics.com";
+    twacticsLink.target = "_blank";
+    twacticsLink.textContent = "Twactics";
+    twacticsLink.style.color = "#2f1b00";
+    twacticsLink.style.textDecoration = "underline";
+    
+    createdBy.appendChild(document.createTextNode("Created by "));
+    createdBy.appendChild(twacticsLink);
+    
+    // Append
+    footer.appendChild(feedbackLink);
+    footer.appendChild(createdBy);
     
     content.appendChild(footer);
 
