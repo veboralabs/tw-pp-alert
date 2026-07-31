@@ -45,20 +45,21 @@
     function formatRemainingTime(returnTimestamp) {
         const now = getServerTimestamp();
         const returnTime = Number(returnTimestamp) * 1000;
+    
         const remainingSeconds = Math.max(
             0,
             Math.ceil((returnTime - now) / 1000)
         );
-
-        const hours = Math.floor(remainingSeconds / 3600);
-        const minutes = Math.floor((remainingSeconds % 3600) / 60);
-        const seconds = remainingSeconds % 60;
-
-        return [
-            String(hours).padStart(2, "0"),
-            String(minutes).padStart(2, "0"),
-            String(seconds).padStart(2, "0")
-        ].join(":");
+    
+        const remainingMinutes = Math.ceil(remainingSeconds / 60);
+        const hours = Math.floor(remainingMinutes / 60);
+        const minutes = remainingMinutes % 60;
+    
+        if (hours > 0) {
+            return `${hours}:${String(minutes).padStart(2, "0")}`;
+        }
+    
+        return String(minutes);
     }
 
     function extractJsonObjects(html) {
@@ -318,20 +319,20 @@ function extractVillageData(html) {
 
     function getOptionText(option) {
         if (!option) {
-            return "No run";
+            return "N";
         }
-
+    
         if (option.scavenging_squad?.return_time) {
             return formatRemainingTime(
                 option.scavenging_squad.return_time
             );
         }
-
+    
         if (option.is_locked === true) {
-            return "LOCKED";
+            return "L";
         }
-
-        return "No run";
+    
+        return "N";
     }
 
     function getVillageLine(village) {
@@ -364,7 +365,7 @@ function extractVillageData(html) {
             results.push(getOptionText(option));
         }
     
-        return `${coordinates}: ${results.join(" - ")}`;
+        return `${coordinates}:${results.join(",")}`;
     }
 
     async function copyToClipboard(text) {
@@ -434,7 +435,7 @@ function extractVillageData(html) {
         const output = "/scav update data:" +
             Array.from(uniqueVillages.values())
                 .map(getVillageLine)
-                .join(" ; ");
+                .join(";");
 
         await copyToClipboard(output);
 
